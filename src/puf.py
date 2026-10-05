@@ -1,82 +1,112 @@
 import hashlib
 import secrets
 import random
+import bchlib
 
-class FuzzyExtractor:
+class BCHSecureSketch:
     """
-    Implements a Secure Sketch Fuzzy Extractor using a Repetition Code.
-    Capable of correcting bit-flip noise from physical SRAM variations.
+    Implements a BCH-based Secure Sketch Fuzzy Extractor.
+    Uses a concatenated code (Repetition + BCH) to tolerate 8-12% bit-flips
+    from SRAM physical uncloneable functions.
     """
-    def __init__(self, key_bits=128, repetition=7):
-        self.key_bits = key_bits
+    def __init__(self, key_bytes=16, repetition=11, bch_t=12):
+        self.key_bytes = key_bytes
         self.repetition = repetition
-        self.puf_bits = key_bits * repetition
+        
+        # BCH protects the 128-bit key
+        self.bch = bchlib.BCH(bch_t, m=8)
+        
+        # Dummy encode to find exact ECC length
+        dummy_data = bytes([0] * self.key_bytes)
+        self.ecc_bytes = len(self.bch.encode(dummy_data))
+        self.c_bytes = self.key_bytes + self.ecc_bytes
+        self.puf_bytes = self.c_bytes * self.repetition
 
-    def _encode(self, key_bytes: bytes) -> list[int]:
-        bits = []
-        for byte in key_bytes:
-            for i in range(8):
-                bit = (byte >> i) & 1
-                bits.extend([bit] * self.repetition)
-        return bits
+    def _repeat(self, data: bytes) -> bytearray:
+        out = bytearray()
+        for b in data:
+            for _ in range(self.repetition):
+                out.append(b)
+        return out
 
-    def _decode(self, encoded_bits: list[int]) -> bytes:
-        key_bytes = bytearray()
-        for b in range(self.key_bits // 8):
-            byte_val = 0
-            for i in range(8):
-                idx = (b * 8 + i) * self.repetition
-                chunk = encoded_bits[idx : idx + self.repetition]
-                # Majority vote error correction
-                if sum(chunk) > self.repetition // 2:
-                    byte_val |= (1 << i)
-            key_bytes.append(byte_val)
-        return bytes(key_bytes)
+    def _unrepeat(self, data: bytearray) -> bytearray:
+        out = bytearray()
+        for i in range(0, len(data), self.repetition):
+            chunk = data[i:i+self.repetition]
+            # Bitwise majority vote across the repeated bytes
+            reconstructed_byte = 0
+            for bit_idx in range(8):
+                bit_sum = 0
+                for b in chunk:
+                    bit_sum += (b >> bit_idx) & 1
+                if bit_sum > self.repetition // 2:
+                    reconstructed_byte |= (1 << bit_idx)
+            out.append(reconstructed_byte)
+        return out
 
-    def generate(self, r: list[int]) -> tuple[bytes, list[int]]:
-        """Gen: Takes PUF response R, returns (Key, HelperData)"""
-        k = secrets.token_bytes(self.key_bits // 8)
-        c = self._encode(k)
-        # Helper data W = R XOR C
-        w = [r_bit ^ c_bit for r_bit, c_bit in zip(r, c)]
+    def generate(self, r: bytes) -> tuple[bytes, bytes]:
+        if len(r) != self.puf_bytes:
+            raise ValueError(f"PUF must be {self.puf_bytes} bytes")
+            
+        k = secrets.token_bytes(self.key_bytes)
+        ecc = self.bch.encode(k)
+        
+        c = k + ecc
+        # Repeat the ENTIRE codeword
+        rep_c = self._repeat(c)
+        
+        # Helper data W = R XOR rep_C
+        w = bytes([r_b ^ c_b for r_b, c_b in zip(r, rep_c)])
         return hashlib.sha256(k).digest(), w
 
-    def reproduce(self, r_prime: list[int], w: list[int]) -> bytes:
-        """Rep: Takes noisy PUF response R' and HelperData W, returns Key"""
-        # C' = R' XOR W
-        c_prime = [rp_bit ^ w_bit for rp_bit, w_bit in zip(r_prime, w)]
-        k_prime = self._decode(c_prime)
-        return hashlib.sha256(k_prime).digest()
+    def reproduce(self, r_prime: bytes, w: bytes) -> bytes:
+        # rep_C' = R' XOR W
+        rep_c_prime = bytearray([rp_b ^ w_b for rp_b, w_b in zip(r_prime, w)])
+        
+        # First, unrepeat to correct massive bit-flips (reduces 10% -> ~1%)
+        c_prime = self._unrepeat(rep_c_prime)
+        
+        data_corrupted = c_prime[:self.key_bytes]
+        ecc_corrupted = c_prime[self.key_bytes:]
+        
+        bitflips = self.bch.decode(data_corrupted, ecc_corrupted)
+        if bitflips == -1:
+            raise ValueError("BCH decode failed: too many errors")
+            
+        self.bch.correct(data_corrupted, ecc_corrupted)
+        return hashlib.sha256(data_corrupted).digest()
 
 
 class SimulatedSRAMPUF:
     """
     Simulates physical SRAM PUF cells with inherent noise (bit flips).
-    Uses a Fuzzy Extractor to derive a stable cryptographic root key, 
-    which is then used with HMAC to create a Challenge-Response interface.
+    Uses a BCH Fuzzy Extractor to derive a stable cryptographic root key.
     """
-    def __init__(self, device_id: str, bit_error_rate=0.05):
+    def __init__(self, device_id: str, bit_error_rate=0.10):
         self.device_id = device_id
-        self.extractor = FuzzyExtractor(key_bits=128, repetition=11)
+        self.extractor = BCHSecureSketch(key_bytes=16, repetition=7, bch_t=12)
         self.bit_error_rate = bit_error_rate
         
-        # Simulate physical manufacturing variations (the true, stable PUF state)
-        self._ground_truth_puf = [secrets.randbits(1) for _ in range(self.extractor.puf_bits)]
-        self._helper_data = []  # Stored publicly on the device after enrollment
+        # Simulate physical manufacturing variations
+        self._ground_truth_puf = secrets.token_bytes(self.extractor.puf_bytes)
+        self._helper_data = b""
 
-    def _read_sram(self) -> list[int]:
+    def _read_sram(self) -> bytes:
         """Simulates powering on the SRAM, introducing physical bit-flip noise."""
-        return [
-            bit ^ 1 if random.random() < self.bit_error_rate else bit 
-            for bit in self._ground_truth_puf
-        ]
+        out = bytearray(self._ground_truth_puf)
+        for i in range(len(out)):
+            for bit in range(8):
+                if random.random() < self.bit_error_rate:
+                    out[i] ^= (1 << bit)
+        return bytes(out)
 
     @classmethod
-    def enroll(cls, device_id: str):
+    def enroll(cls, device_id: str, bit_error_rate=0.10):
         """Run once during device provisioning in a secure facility."""
-        obj = cls(device_id)
-        r = obj._read_sram()
-        # We discard the initial key, we only need to store the helper data
+        obj = cls(device_id, bit_error_rate)
+        # Enrollment uses the stable ground truth (simulating 
+        # a clean laboratory read with averaging/burn-in testing)
+        r = obj._ground_truth_puf
         _, helper_data = obj.extractor.generate(r)
         obj._helper_data = helper_data
         return obj
@@ -86,7 +116,6 @@ class SimulatedSRAMPUF:
         r_prime = self._read_sram()
         stable_root_key = self.extractor.reproduce(r_prime, self._helper_data)
         
-        # Convert weak PUF to strong PUF Challenge-Response using HMAC
         import hmac
         return hmac.new(stable_root_key, self.device_id.encode() + b"|" + challenge, hashlib.sha256).digest()
 
