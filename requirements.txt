@@ -1,0 +1,15 @@
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.4
+matplotlib>=3.8
+cryptography>=42
+pytest>=8
+wfdb>=4.1
+torch>=2.2
+rdflib>=7.0
+web3>=6.15
+py-solc-x>=2.0
+flwr>=1.7
+pqcrypto>=1.0
+ecdsa>=0.18
+kyber-py>=1.2
