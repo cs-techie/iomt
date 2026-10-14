@@ -10,8 +10,18 @@ def smoothness_score(cmd):
     if len(cmd)<4:return 0
     vel=np.diff(cmd,axis=0); acc=np.diff(vel,axis=0); jerk=np.diff(acc,axis=0); return float(np.mean(np.linalg.norm(jerk,axis=1)))
 
-from .pqc import PQCProvider
-from .phase3 import aes_gcm_encrypt, aes_gcm_decrypt
+import sys
+from pathlib import Path
+
+try:
+    from .pqc import PQCProvider
+    from .phase3 import aes_gcm_encrypt, aes_gcm_decrypt
+except ImportError:
+    # Standalone execution support
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from src.pqc import PQCProvider
+    from src.phase3 import aes_gcm_encrypt, aes_gcm_decrypt
+
 import json
 
 class SecureTeleSurgeryLink:
@@ -49,3 +59,22 @@ class SecureTeleSurgeryLink:
             raise ValueError("Signature invalid")
             
         return np.array(json.loads(payload.decode()))
+
+
+if __name__ == '__main__':
+    import time
+    print("=== Secure Tele-Surgery Link Simulation ===")
+    link = SecureTeleSurgeryLink()
+    cmds = normal_commands(100)
+    atk = jitter_attack(cmds)
+    
+    start = time.perf_counter()
+    for i in range(10):
+        n, c = link.transmit(cmds[i])
+        rec = link.receive(n, c)
+        assert np.allclose(cmds[i], rec)
+    elapsed = (time.perf_counter() - start) * 1000 / 10
+    print(f"PQC Link Latency : {elapsed:.2f} ms / command")
+    print(f"Normal jerk      : {smoothness_score(cmds):.8f}")
+    print(f"Attacked jerk    : {smoothness_score(atk):.8f}")
+

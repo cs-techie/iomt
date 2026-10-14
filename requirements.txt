@@ -13,3 +13,4 @@ flwr>=1.7
 pqcrypto>=1.0
 ecdsa>=0.18
 kyber-py>=1.2
+bchlib>=2.1.3

@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 import random
+# pyrefly: ignore [missing-import]
 import bchlib
 
 class BCHSecureSketch:

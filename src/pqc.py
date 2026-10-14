@@ -11,7 +11,7 @@ class PQCProvider:
         self.pk, self.sk = mldsa.keygen()
         # ML-KEM Key Exchange Keypair
         self.kem_pk, self.kem_sk = mlkem.keygen()
-        
+
     def sign(self, message: bytes) -> bytes:
         """Sign a message using ML-DSA (Dilithium)."""
         return mldsa.sign(self.sk, message)

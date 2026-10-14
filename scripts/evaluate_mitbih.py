@@ -578,7 +578,7 @@ def main():
     print()
     print("-" * 70)
     print(
-        f"Per-record results saved to:"
+        "Per-record results saved to:"
     )
     print(
         f"{output_path}"

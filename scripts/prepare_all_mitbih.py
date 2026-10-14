@@ -163,7 +163,7 @@ def main():
 
         if len(df) == 0:
             print(
-                f"  WARNING: no valid beats"
+                "  WARNING: no valid beats"
             )
             continue
 

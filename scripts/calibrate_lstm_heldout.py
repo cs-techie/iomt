@@ -388,7 +388,7 @@ def main():
     print("-" * 70)
 
     print(
-        f"Threshold saved to:"
+        "Threshold saved to:"
     )
 
     print(

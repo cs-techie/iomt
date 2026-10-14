@@ -203,11 +203,11 @@ def main():
     print("-" * 100)
 
     print(
-        "Bit mean ideal ≈ 0.5"
+        "Bit mean ideal ~= 0.5"
     )
 
     print(
-        "Lag-1 correlation ideal ≈ 0"
+        "Lag-1 correlation ideal ~= 0"
     )
 
     print(

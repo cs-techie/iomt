@@ -1,4 +1,3 @@
-import pytest
 import os
 from src.puf import SimulatedSRAMPUF
 
@@ -42,24 +41,18 @@ def test_puf_negative_tampered_helper_data():
     """
     Test 2: Negative test - Tampered ciphertext (helper data) must fail.
     """
-    puf = SimulatedSRAMPUF.enroll("sensor-test", bit_error_rate=0.10)
+    puf = SimulatedSRAMPUF.enroll("sensor-test", bit_error_rate=0.0)
     challenge = os.urandom(16)
+    good_key = puf.derive_key_material(challenge)
     
-    # Tamper with the helper data (flip one bit)
-    tampered_helper = bytearray(puf._helper_data)
-    tampered_helper[0] ^= 0b00000001
+    # Tamper with helper data beyond ECC correction threshold
+    tampered_helper = bytearray(b ^ 0xFF for b in puf._helper_data)
     puf._helper_data = bytes(tampered_helper)
     
     # It should either raise ValueError (BCH detects uncorrectable) or return the WRONG key
-    original_ground_truth = puf._ground_truth_puf
-    import hmac, hashlib
-    true_root = puf.extractor.reproduce(original_ground_truth, puf._helper_data) # wait, tampered helper will give wrong root
-    
     try:
         derived = puf.derive_key_material(challenge)
-        # If it didn't throw, it MUST NOT match a previously known good key
-        # (Though we didn't save the good key, we know tampering changes the decrypted result)
-        assert True
+        assert derived != good_key
     except ValueError:
         # Expected failure
         assert True

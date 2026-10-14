@@ -1,1 +1,1 @@
-from scripts.demo import *
+import scripts.demo  # noqa: F401

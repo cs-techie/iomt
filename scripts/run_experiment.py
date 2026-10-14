@@ -1,4 +1,4 @@
-import argparse,sys,time,json; from pathlib import Path; sys.path.insert(0,str(Path(__file__).resolve().parents[1])); import pandas as pd, numpy as np
+import argparse,sys,json; from pathlib import Path; sys.path.insert(0,str(Path(__file__).resolve().parents[1])); import pandas as pd, numpy as np
 from src.pipeline import BioTwin6GPipeline
 p=argparse.ArgumentParser(); p.add_argument('--dataset',default=None); p.add_argument('--n',type=int,default=100); p.add_argument('--out',default='results/experiment_results.json'); a=p.parse_args(); pipe=BioTwin6GPipeline(); rows=[]
 if a.dataset:

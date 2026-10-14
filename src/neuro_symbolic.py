@@ -1,4 +1,6 @@
+# pyrefly: ignore [missing-import]
 from rdflib import Graph, Literal, Namespace
+# pyrefly: ignore [missing-import]
 from rdflib.namespace import XSD
 from dataclasses import dataclass
 
