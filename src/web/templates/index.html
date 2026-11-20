@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bio-Twin 6G — Intelligent Cyber-Physical Medical Twin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0f17;
+      color: #e2e8f0;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .glass-input {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+    .glow-rose {
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation / Header -->
+  <header class="glass-panel sticky top-0 z-50 px-6 py-4 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
+          <i class="fa-solid fa-heart-pulse text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">Bio-Twin 6G</h1>
+            <span class="text-xs bg-cyan-950 text-cyan-400 border border-cyan-800/60 font-semibold px-2 py-0.5 rounded-full font-mono">Arch-2 Prototype</span>
+          </div>
+          <p class="text-xs text-slate-400">Post-Quantum Cryptography &bull; Neuro-Symbolic IDS &bull; 6G Slicing</p>
+        </div>
+      </div>
+
+      <!-- Live Status Badges -->
+      <div class="flex items-center space-x-2 text-xs">
+        <div class="flex items-center px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-800/50 text-emerald-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-ping"></span>
+          <span>SRAM-PUF Active</span>
+        </div>
+        <div class="flex items-center px-2.5 py-1 rounded-lg bg-indigo-950/60 border border-indigo-800/50 text-indigo-300">
+          <i class="fa-solid fa-shield-halved mr-1.5 text-indigo-400"></i>
+          <span>ML-DSA / ML-KEM</span>
+        </div>
+        <div class="flex items-center px-2.5 py-1 rounded-lg bg-sky-950/60 border border-sky-800/50 text-sky-300">
+          <i class="fa-solid fa-tower-broadcast mr-1.5 text-sky-400"></i>
+          <span>6G URLLC Slices</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-6 flex-1 flex flex-col space-y-6">
+
+    <!-- Navigation Tabs -->
+    <div class="flex space-x-2 border-b border-slate-800 pb-2 overflow-x-auto text-sm">
+      <button onclick="switchTab('pipeline')" id="tab-btn-pipeline" class="tab-button px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 bg-cyan-600 text-white shadow-lg shadow-cyan-600/30">
+        <i class="fa-solid fa-microchip"></i>
+        <span>Live Bio-Twin Pipeline</span>
+      </button>
+      <button onclick="switchTab('surgery')" id="tab-btn-surgery" class="tab-button px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 bg-slate-800/60 text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-hand-holding-medical"></i>
+        <span>Tele-Surgery Robotics</span>
+      </button>
+      <button onclick="switchTab('ssi')" id="tab-btn-ssi" class="tab-button px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 bg-slate-800/60 text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-id-card-clip"></i>
+        <span>W3C SSI & Credentials</span>
+      </button>
+      <button onclick="switchTab('breakglass')" id="tab-btn-breakglass" class="tab-button px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 bg-slate-800/60 text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-lock-open"></i>
+        <span>Emergency Break-Glass</span>
+      </button>
+      <button onclick="switchTab('mitbih')" id="tab-btn-mitbih" class="tab-button px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 bg-slate-800/60 text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>MIT-BIH ECG Dataset</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: LIVE BIO-TWIN PIPELINE -->
+    <div id="tab-pipeline" class="tab-content grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Patient Telemetry & Attack Controls -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+              <i class="fa-solid fa-sliders text-cyan-400"></i>
+              <span>Patient Telemetry Input</span>
+            </h2>
+            <span class="text-xs text-slate-400 font-mono">Patient: patient-001</span>
+          </div>
+
+          <!-- Quick Attack / Normal Presets -->
+          <div>
+            <label class="text-xs text-slate-400 font-medium mb-1.5 block">Scenario Presets</label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button onclick="loadPreset('normal')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium border border-slate-700 transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                <span>Normal Vitals</span>
+              </button>
+              <button onclick="loadPreset('arrhythmia')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium border border-slate-700 transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+                <span>Arrhythmia Alert</span>
+              </button>
+              <button onclick="loadPreset('ddos')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium border border-slate-700 transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-bolt text-rose-400"></i>
+                <span>Flood / DDoS</span>
+              </button>
+              <button onclick="loadPreset('spoof')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium border border-slate-700 transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-mask text-purple-400"></i>
+                <span>Sensor Tamper</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Vitals Controls -->
+          <div class="space-y-3.5">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Heart Rate (bpm)</span>
+                <span id="val-hr" class="font-mono text-cyan-400 font-semibold">72 bpm</span>
+              </div>
+              <input id="input-hr" type="range" min="20" max="240" value="72" oninput="updateVal('hr', this.value, ' bpm')" class="w-full accent-cyan-400 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Blood Glucose (mg/dL)</span>
+                <span id="val-glucose" class="font-mono text-cyan-400 font-semibold">118 mg/dL</span>
+              </div>
+              <input id="input-glucose" type="range" min="30" max="400" value="118" oninput="updateVal('glucose', this.value, ' mg/dL')" class="w-full accent-cyan-400 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">SpO2 Oxygen Saturation (%)</span>
+                <span id="val-spo2" class="font-mono text-cyan-400 font-semibold">98 %</span>
+              </div>
+              <input id="input-spo2" type="range" min="60" max="100" value="98" oninput="updateVal('spo2', this.value, ' %')" class="w-full accent-cyan-400 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Packet Rate (pps)</label>
+                <input id="input-rate" type="number" value="12" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Auth Failures</label>
+                <input id="input-auth-fail" type="number" value="0" min="0" max="20" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cyan-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Network Jitter (ms)</label>
+                <input id="input-jitter" type="number" value="3.0" step="0.5" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Neural Anomaly Score</label>
+                <input id="input-neural" type="number" value="0.08" step="0.01" min="0" max="1" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cyan-500">
+              </div>
+            </div>
+
+            <!-- 6G Network Slice Choice -->
+            <div>
+              <label class="text-xs text-slate-400 font-medium mb-1.5 block">6G Network Slice SLA</label>
+              <select id="input-slice" class="glass-input w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                <option value="critical">Critical IoMT Slice (Budget: 20 ms, Priority: 90)</option>
+                <option value="tele_surgery">Tele-Surgery Slice (Budget: 10 ms, Priority: 100)</option>
+                <option value="normal">Normal IoMT Slice (Budget: 100 ms, Priority: 50)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Execute Button -->
+          <button onclick="executePipeline()" id="btn-run-pipeline" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm transition shadow-lg shadow-cyan-500/25 flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-play"></i>
+            <span>Execute 5-Phase Secure Pipeline</span>
+          </button>
+        </div>
+
+        <!-- Real-Time Pulse Waveform Canvas -->
+        <div class="glass-panel p-4 rounded-2xl space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-300 font-medium flex items-center space-x-1.5">
+              <i class="fa-solid fa-wave-square text-emerald-400"></i>
+              <span>Simulated ECG Rhythm Strip</span>
+            </span>
+            <span class="font-mono text-emerald-400 text-xs" id="canvas-hr-display">72 BPM</span>
+          </div>
+          <canvas id="ecgCanvas" height="60" class="w-full bg-slate-950/80 rounded-lg border border-slate-800"></canvas>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Pipeline Results & 5-Stage Breakdown -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Top Verdict Card -->
+        <div id="verdict-card" class="glass-panel p-6 rounded-2xl border-l-4 border-l-cyan-500 transition-all">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+              <span class="text-xs uppercase tracking-wider text-slate-400 font-medium">Neuro-Symbolic IDS Verdict</span>
+              <div class="flex items-center space-x-3 mt-1">
+                <span id="verdict-badge" class="px-3.5 py-1 rounded-full text-sm font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                  READY FOR EXECUTION
+                </span>
+                <span id="verdict-time" class="text-xs text-slate-400 font-mono"></span>
+              </div>
+            </div>
+
+            <!-- 6G SLA Badge -->
+            <div id="sla-container" class="text-right hidden">
+              <span class="text-xs uppercase text-slate-400 block">6G Slice SLA</span>
+              <span id="sla-badge" class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                SLA MET
+              </span>
+            </div>
+          </div>
+
+          <p id="verdict-explanation" class="text-sm text-slate-300 leading-relaxed">
+            Configure vitals or select a preset and click "Execute 5-Phase Secure Pipeline" to evaluate the full cryptographic and intrusion detection stack.
+          </p>
+
+          <!-- Fired Rules Tags -->
+          <div id="fired-rules-box" class="mt-3 flex flex-wrap gap-1.5 hidden">
+            <!-- Badges dynamically injected -->
+          </div>
+        </div>
+
+        <!-- 5-Stage Cryptographic Flow -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+            <i class="fa-solid fa-network-wired text-cyan-400"></i>
+            <span>Architecture 2 Stage Execution Flow</span>
+          </h3>
+
+          <div class="space-y-3 text-xs" id="pipeline-stages">
+
+            <!-- Stage 1: PUF & PQC -->
+            <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold">1</div>
+                  <span class="font-semibold text-slate-200">Hardware Trust & Post-Quantum Auth</span>
+                </div>
+                <span id="stage-1-status" class="text-slate-400 font-mono">Idle</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-slate-400 font-mono text-[11px] bg-slate-950/60 p-2.5 rounded-lg">
+                <div>PUF Challenge: <span id="s1-puf" class="text-slate-200">-</span></div>
+                <div>ML-DSA-44 Sig: <span id="s1-pqc" class="text-slate-200">-</span></div>
+              </div>
+            </div>
+
+            <!-- Stage 2: DP Privacy -->
+            <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold">2</div>
+                  <span class="font-semibold text-slate-200">Gaussian Differential Privacy (DP)</span>
+                </div>
+                <span id="stage-2-status" class="text-slate-400 font-mono">Idle</span>
+              </div>
+              <div class="text-slate-400 font-mono text-[11px] bg-slate-950/60 p-2.5 rounded-lg flex justify-between">
+                <div>Raw Vitals: <span id="s2-raw" class="text-slate-200">-</span></div>
+                <div>DP Perturbed: <span id="s2-dp" class="text-emerald-400">-</span></div>
+              </div>
+            </div>
+
+            <!-- Stage 3: Neuro-Symbolic IDS -->
+            <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold">3</div>
+                  <span class="font-semibold text-slate-200">Neuro-Symbolic Reasoning Engine</span>
+                </div>
+                <span id="stage-3-status" class="text-slate-400 font-mono">Idle</span>
+              </div>
+              <div class="text-slate-400 font-mono text-[11px] bg-slate-950/60 p-2.5 rounded-lg">
+                <div class="flex justify-between mb-1">
+                  <span>RDF Knowledge Graph Rules:</span>
+                  <span id="s3-rules-count" class="text-slate-200 font-bold">0 fired</span>
+                </div>
+                <div id="s3-flags-text" class="text-slate-300">Awaiting evaluation...</div>
+              </div>
+            </div>
+
+            <!-- Stage 4: Phase 2 Chaos + CAE Compression -->
+            <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold">4</div>
+                  <span class="font-semibold text-slate-200">Phase 2: 5-Map Chaos & CAE Compression</span>
+                </div>
+                <span id="stage-4-status" class="text-slate-400 font-mono">Idle</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-slate-400 font-mono text-[11px] bg-slate-950/60 p-2.5 rounded-lg">
+                <div>Compressed Payload: <span id="s4-bytes" class="text-slate-200">-</span></div>
+                <div>Shannon Entropy: <span id="s4-entropy" class="text-slate-200">-</span></div>
+              </div>
+            </div>
+
+            <!-- Stage 5: Phase 3 AES-256-GCM + ML-KEM -->
+            <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <div class="w-6 h-6 rounded-full bg-cyan-950 text-cyan-400 flex items-center justify-center font-bold">5</div>
+                  <span class="font-semibold text-slate-200">Phase 3: ML-KEM-768 & AES-256-GCM</span>
+                </div>
+                <span id="stage-5-status" class="text-slate-400 font-mono">Idle</span>
+              </div>
+              <div class="text-slate-400 font-mono text-[11px] bg-slate-950/60 p-2.5 rounded-lg space-y-1">
+                <div class="flex justify-between">
+                  <span>ML-KEM Key Exchange:</span>
+                  <span id="s5-kem" class="text-emerald-400 font-bold">Decapsulation Verified</span>
+                </div>
+                <div class="truncate">Ciphertext: <span id="s5-cipher" class="text-slate-300">-</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: TELE-SURGERY ROBOTICS SIMULATOR -->
+    <div id="tab-surgery" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Parameters & Metrics -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+              <i class="fa-solid fa-gamepad text-indigo-400"></i>
+              <span>Tele-Robotic Arm Controls</span>
+            </h2>
+            <span class="text-xs bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded border border-indigo-800 font-mono">ML-KEM Link</span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Number of Kinematic Commands</label>
+              <input id="surg-num" type="number" min="10" max="100" value="50" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Injected Jitter Intensity</span>
+                <span id="surg-jitter-val" class="font-mono text-indigo-400">8.0 ms</span>
+              </div>
+              <input id="surg-jitter" type="range" min="1" max="40" value="8" step="0.5" oninput="document.getElementById('surg-jitter-val').innerText = this.value + ' ms'" class="w-full accent-indigo-400 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Random Anomaly Spike Frequency (every N commands)</label>
+              <input id="surg-spike" type="number" min="5" max="50" value="20" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white">
+            </div>
+
+            <button onclick="runSurgerySim()" id="btn-run-surg" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-play"></i>
+              <span>Simulate Kinematics & PQC Link</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Jerk Score Metrics Card -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Kinematic Smoothness (Jerk)</h3>
+          
+          <div class="grid grid-cols-2 gap-3 font-mono text-xs">
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Normal Jerk Score</span>
+              <span id="surg-jerk-normal" class="text-emerald-400 text-base font-bold">~0.000000</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Attacked Jerk Score</span>
+              <span id="surg-jerk-attacked" class="text-rose-400 text-base font-bold">0.00000</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-900/60 font-mono text-xs flex justify-between items-center">
+            <span class="text-indigo-200">PQC Secure Link Latency:</span>
+            <span id="surg-latency" class="text-indigo-400 font-bold text-sm">~8.5 ms / cmd</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kinematic Trajectory Visualization -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+              <i class="fa-solid fa-chart-line text-indigo-400"></i>
+              <span>Surgeon Arm Trajectory Comparison</span>
+            </h3>
+            <div class="flex items-center space-x-3 text-xs font-mono">
+              <span class="flex items-center text-emerald-400"><span class="w-3 h-0.5 bg-emerald-400 mr-1.5 inline-block"></span> Normal Path</span>
+              <span class="flex items-center text-rose-400"><span class="w-3 h-0.5 bg-rose-400 mr-1.5 inline-block"></span> Jitter Attacked</span>
+            </div>
+          </div>
+
+          <canvas id="surgeryCanvas" height="240" class="w-full bg-slate-950/90 rounded-xl border border-slate-800"></canvas>
+          <p class="text-xs text-slate-400 text-center">
+            2D projection of 3D surgeon kinematic commands. High jerk or jagged spikes indicate micro-tremor injection or packet replay attacks.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: W3C SSI & VERIFIABLE CREDENTIALS -->
+    <div id="tab-ssi" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+            <i class="fa-solid fa-address-card text-purple-400"></i>
+            <span>Issue Verifiable Credential</span>
+          </h2>
+
+          <div class="space-y-3.5 text-xs">
+            <div>
+              <label class="text-slate-400 block mb-1">Clinical Role</label>
+              <select id="ssi-role" class="glass-input w-full px-3 py-2 rounded-lg text-sm text-slate-200">
+                <option value="doctor">Licensed Physician / Doctor</option>
+                <option value="surgeon">Tele-Robotic Surgeon</option>
+                <option value="nurse">Critical Care Nurse</option>
+                <option value="emergency">Emergency Paramedic</option>
+                <option value="auditor">Healthcare Auditor</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-slate-400 block mb-1">License / Medical ID</label>
+              <input id="ssi-license" type="text" value="MED-LIC-001" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white">
+            </div>
+
+            <button onclick="issueSSI()" id="btn-issue-ssi" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition shadow-lg shadow-purple-600/30 flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-signature"></i>
+              <span>Issue & Ed25519 Sign Credential</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl space-y-3 text-xs">
+          <span class="text-slate-400 font-semibold uppercase tracking-wider block">Decentralized Identifier (DID)</span>
+          <div class="p-3 rounded-xl bg-slate-950 font-mono text-purple-400 break-all text-[11px] border border-slate-800" id="ssi-did-display">
+            Awaiting issuance...
+          </div>
+          <div class="flex items-center space-x-2" id="ssi-verified-badge">
+            <!-- Injected status -->
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">W3C JSON-LD Credential Document</h3>
+            <span class="text-xs text-slate-400 font-mono">Ed25519VerificationKey2020</span>
+          </div>
+
+          <pre id="ssi-json-preview" class="p-4 rounded-xl bg-slate-950 font-mono text-xs text-slate-300 overflow-x-auto border border-slate-800 max-h-[420px]">
+{
+  "notice": "Click 'Issue & Ed25519 Sign Credential' to generate an authentic W3C compliant Verifiable Credential."
+}
+          </pre>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 4: EMERGENCY BREAK-GLASS & AUDIT LEDGER -->
+    <div id="tab-breakglass" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+              <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+              <span>Emergency Override Protocol</span>
+            </h2>
+            <span class="text-xs bg-amber-950 text-amber-400 border border-amber-800 px-2 py-0.5 rounded font-mono">ZK / PoK</span>
+          </div>
+
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Allows authorized clinical personnel to bypass normal access controls during life-threatening situations using cryptographic proof-of-knowledge. Every event is immutably sealed into the audit chain.
+          </p>
+
+          <div class="space-y-3.5 text-xs">
+            <div>
+              <label class="text-slate-400 block mb-1">Emergency Role</label>
+              <input id="bg-role" type="text" value="doctor" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm font-mono text-white">
+            </div>
+
+            <div>
+              <label class="text-slate-400 block mb-1">Clinical Justification / Purpose</label>
+              <input id="bg-purpose" type="text" value="unconscious-patient-cardiac-arrest" class="glass-input w-full px-3 py-1.5 rounded-lg text-sm text-white">
+            </div>
+
+            <button onclick="triggerBreakGlass()" id="btn-trigger-bg" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-semibold text-sm transition shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-bolt-lightning"></i>
+              <span>Execute Break-Glass Override</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="bg-result-card" class="glass-panel p-5 rounded-2xl space-y-3 text-xs hidden">
+          <span class="text-slate-400 font-semibold uppercase tracking-wider block">Proof-of-Knowledge Receipt</span>
+          <div class="font-mono text-[11px] space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div>Commitment: <span id="bg-commit" class="text-amber-400 truncate block">-</span></div>
+            <div>Challenge: <span id="bg-challenge" class="text-slate-300 block">-</span></div>
+            <div>HMAC Proof: <span id="bg-proof" class="text-emerald-400 block">-</span></div>
+            <div class="pt-1 border-t border-slate-800 flex justify-between">
+              <span>Audit Chain Valid:</span>
+              <span id="bg-chain-status" class="text-emerald-400 font-bold">TRUE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blockchain Audit Ledger View -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+              <i class="fa-solid fa-cubes text-cyan-400"></i>
+              <span>Immutable Audit Ledger Chain</span>
+            </h3>
+            <button onclick="refreshAuditLogs()" class="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center space-x-1">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <div class="overflow-x-auto max-h-[440px]">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] sticky top-0">
+                <tr>
+                  <th class="p-2.5">Block</th>
+                  <th class="p-2.5">Time</th>
+                  <th class="p-2.5">Event Type</th>
+                  <th class="p-2.5">Payload / Decision</th>
+                  <th class="p-2.5">Block Hash</th>
+                </tr>
+              </thead>
+              <tbody id="audit-table-body" class="divide-y divide-slate-800">
+                <!-- Dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 5: MIT-BIH DATASET EXPLORER -->
+    <div id="tab-mitbih" class="tab-content hidden space-y-6">
+      <div class="glass-panel p-5 rounded-2xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+              <i class="fa-solid fa-database text-cyan-400"></i>
+              <span>PhysioNet MIT-BIH Arrhythmia Dataset Samples</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Preprocessed ECG beats from record 100 (`data/processed/mitbih_100.csv`). Select any beat to test against the Neuro-Symbolic IDS.
+            </p>
+          </div>
+          <button onclick="loadMitbihSamples()" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium font-mono flex items-center space-x-1.5">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Reload Samples</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto max-h-[480px]">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] sticky top-0">
+              <tr>
+                <th class="p-2.5">Beat Index</th>
+                <th class="p-2.5">Heart Rate</th>
+                <th class="p-2.5">RR Interval</th>
+                <th class="p-2.5">ECG Min / Max</th>
+                <th class="p-2.5">RR Dev (Z)</th>
+                <th class="p-2.5">HR Dev (Z)</th>
+                <th class="p-2.5 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="mitbih-table-body" class="divide-y divide-slate-800">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 px-6 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
+    Bio-Twin 6G Architecture 2 Prototype &bull; Faculty Research Demonstration &bull; Local Environment Active
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Tab switching logic
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-lg', 'shadow-cyan-600/30');
+        btn.classList.add('bg-slate-800/60', 'text-slate-400');
+      });
+
+      const activeTab = document.getElementById('tab-' + tabName);
+      const activeBtn = document.getElementById('tab-btn-' + tabName);
+      if (activeTab) activeTab.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-800/60', 'text-slate-400');
+        activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-lg', 'shadow-cyan-600/30');
+      }
+
+      if (tabName === 'breakglass') refreshAuditLogs();
+      if (tabName === 'mitbih') loadMitbihSamples();
+      if (tabName === 'surgery') runSurgerySim();
+    }
+
+    function updateVal(id, val, suffix) {
+      document.getElementById('val-' + id).innerText = val + suffix;
+      if (id === 'hr') {
+        document.getElementById('canvas-hr-display').innerText = val + ' BPM';
+      }
+    }
+
+    // Presets
+    function loadPreset(type) {
+      const hr = document.getElementById('input-hr');
+      const glucose = document.getElementById('input-glucose');
+      const spo2 = document.getElementById('input-spo2');
+      const rate = document.getElementById('input-rate');
+      const auth = document.getElementById('input-auth-fail');
+      const jitter = document.getElementById('input-jitter');
+      const neural = document.getElementById('input-neural');
+      const slice = document.getElementById('input-slice');
+
+      if (type === 'normal') {
+        hr.value = 72; glucose.value = 118; spo2.value = 98;
+        rate.value = 12; auth.value = 0; jitter.value = 3.0; neural.value = 0.08;
+        slice.value = 'critical';
+      } else if (type === 'arrhythmia') {
+        hr.value = 185; glucose.value = 135; spo2.value = 94;
+        rate.value = 25; auth.value = 0; jitter.value = 8.0; neural.value = 0.65;
+        slice.value = 'critical';
+      } else if (type === 'ddos') {
+        hr.value = 78; glucose.value = 120; spo2.value = 97;
+        rate.value = 2800; auth.value = 6; jitter.value = 45.0; neural.value = 0.92;
+        slice.value = 'tele_surgery';
+      } else if (type === 'spoof') {
+        hr.value = 210; glucose.value = 340; spo2.value = 80;
+        rate.value = 800; auth.value = 4; jitter.value = 35.0; neural.value = 0.88;
+        slice.value = 'tele_surgery';
+      }
+
+      updateVal('hr', hr.value, ' bpm');
+      updateVal('glucose', glucose.value, ' mg/dL');
+      updateVal('spo2', spo2.value, ' %');
+    }
+
+    // Execute Pipeline
+    async function executePipeline() {
+      const btn = document.getElementById('btn-run-pipeline');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Processing Cryptographic Pipeline...</span>`;
+
+      const payload = {
+        heart_rate: parseFloat(document.getElementById('input-hr').value),
+        glucose: parseFloat(document.getElementById('input-glucose').value),
+        spo2: parseFloat(document.getElementById('input-spo2').value),
+        packet_rate: parseFloat(document.getElementById('input-rate').value),
+        auth_failures: parseInt(document.getElementById('input-auth-fail').value),
+        jitter_ms: parseFloat(document.getElementById('input-jitter').value),
+        neural_score: parseFloat(document.getElementById('input-neural').value),
+        slice_name: document.getElementById('input-slice').value
+      };
+
+      try {
+        const res = await fetch('/api/pipeline/run', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        // Update Verdict Card
+        const verdictBadge = document.getElementById('verdict-badge');
+        const verdictCard = document.getElementById('verdict-card');
+        const verdictExp = document.getElementById('verdict-explanation');
+        const verdictTime = document.getElementById('verdict-time');
+        const firedRulesBox = document.getElementById('fired-rules-box');
+        const slaContainer = document.getElementById('sla-container');
+        const slaBadge = document.getElementById('sla-badge');
+
+        verdictTime.innerText = `Latency: ${data.latency_ms} ms`;
+        verdictExp.innerText = data.explanation;
+
+        if (data.ids_decision === 'ALLOW') {
+          verdictBadge.innerText = 'DECISION: ALLOW';
+          verdictBadge.className = 'px-3.5 py-1 rounded-full text-sm font-bold bg-emerald-950 text-emerald-400 border border-emerald-800';
+          verdictCard.className = 'glass-panel p-6 rounded-2xl border-l-4 border-l-emerald-500 transition-all glow-emerald';
+        } else {
+          verdictBadge.innerText = 'DECISION: BLOCK';
+          verdictBadge.className = 'px-3.5 py-1 rounded-full text-sm font-bold bg-rose-950 text-rose-400 border border-rose-800';
+          verdictCard.className = 'glass-panel p-6 rounded-2xl border-l-4 border-l-rose-500 transition-all glow-rose';
+        }
+
+        // SLA
+        if (data.slice) {
+          slaContainer.classList.remove('hidden');
+          if (data.slice.sla_met) {
+            slaBadge.innerText = `SLA MET (${data.slice.name}: ${data.latency_ms}ms <= ${data.slice.budget_ms}ms)`;
+            slaBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800';
+          } else {
+            slaBadge.innerText = `SLA VIOLATED (${data.latency_ms}ms > ${data.slice.budget_ms}ms)`;
+            slaBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-rose-950 text-rose-400 border border-rose-800';
+          }
+        }
+
+        // Fired Rules
+        firedRulesBox.innerHTML = '';
+        if (data.flags && data.flags.length > 0) {
+          firedRulesBox.classList.remove('hidden');
+          data.flags.forEach(flag => {
+            const badge = document.createElement('span');
+            badge.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-rose-950/70 text-rose-300 border border-rose-800';
+            badge.innerText = flag;
+            firedRulesBox.appendChild(badge);
+          });
+        } else {
+          firedRulesBox.classList.add('hidden');
+        }
+
+        // Update Stages
+        document.getElementById('stage-1-status').innerText = data.authenticated ? 'Verified' : 'Failed';
+        document.getElementById('s1-puf').innerText = data.puf_challenge_hex;
+        document.getElementById('s1-pqc').innerText = data.pqc.valid ? 'Valid (ML-DSA-44)' : 'Invalid';
+
+        document.getElementById('stage-2-status').innerText = 'Applied (Gaussian)';
+        document.getElementById('s2-raw').innerText = `${data.dp.raw.heart_rate} bpm`;
+        document.getElementById('s2-dp').innerText = `${data.dp.noisy.heart_rate} bpm`;
+
+        document.getElementById('stage-3-status').innerText = data.ids_decision;
+        document.getElementById('s3-rules-count').innerText = `${data.flags.length} fired`;
+        document.getElementById('s3-flags-text').innerText = data.flags.length ? data.flags.join(', ') : 'No critical rules violated';
+
+        if (data.phase2) {
+          document.getElementById('stage-4-status').innerText = 'Encoded';
+          document.getElementById('s4-bytes').innerText = `${data.phase2.bytes} B`;
+          document.getElementById('s4-entropy').innerText = `${data.phase2.entropy} bits/B`;
+        } else {
+          document.getElementById('stage-4-status').innerText = 'Blocked (Halted)';
+          document.getElementById('s4-bytes').innerText = 'N/A';
+          document.getElementById('s4-entropy').innerText = 'N/A';
+        }
+
+        if (data.phase3) {
+          document.getElementById('stage-5-status').innerText = 'Encrypted (AES-GCM)';
+          document.getElementById('s5-cipher').innerText = data.phase3.cipher_preview;
+        } else {
+          document.getElementById('stage-5-status').innerText = 'Blocked (Halted)';
+          document.getElementById('s5-cipher').innerText = 'N/A';
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Error executing pipeline: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-play"></i><span>Execute 5-Phase Secure Pipeline</span>`;
+      }
+    }
+
+    // Tele-Surgery simulation
+    async function runSurgerySim() {
+      const btn = document.getElementById('btn-run-surg');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Simulating...</span>`;
+
+      const num = parseInt(document.getElementById('surg-num').value);
+      const jitter = parseFloat(document.getElementById('surg-jitter').value);
+      const spike = parseInt(document.getElementById('surg-spike').value);
+
+      try {
+        const res = await fetch('/api/surgery/simulate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({num_commands: num, jitter_ms: jitter, spike_every: spike})
+        });
+        const d = await res.json();
+
+        document.getElementById('surg-jerk-normal').innerText = d.normal_jerk;
+        document.getElementById('surg-jerk-attacked').innerText = d.attacked_jerk;
+        document.getElementById('surg-latency').innerText = `${d.pqc_latency_ms_per_cmd} ms / cmd`;
+
+        renderSurgeryCanvas(d.trajectory_normal, d.trajectory_attacked);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-play"></i><span>Simulate Kinematics & PQC Link</span>`;
+      }
+    }
+
+    function renderSurgeryCanvas(normal, attacked) {
+      const canvas = document.getElementById('surgeryCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.parentElement.clientWidth;
+      const h = canvas.height = 240;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 30) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 30) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // Plot Normal Trajectory (Emerald)
+      ctx.beginPath();
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.5;
+      const step = w / (normal.length - 1);
+      normal.forEach((pt, i) => {
+        const px = i * step;
+        const py = h/2 - (pt.y * (h/2.5));
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      // Plot Attacked Trajectory (Rose)
+      ctx.beginPath();
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 1.8;
+      attacked.forEach((pt, i) => {
+        const px = i * step;
+        const py = h/2 - (pt.y * (h/2.5));
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+    }
+
+    // SSI Issuance
+    async function issueSSI() {
+      const btn = document.getElementById('btn-issue-ssi');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Issuing...</span>`;
+
+      const role = document.getElementById('ssi-role').value;
+      const license = document.getElementById('ssi-license').value;
+
+      try {
+        const res = await fetch('/api/ssi/issue', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({role, license_id: license})
+        });
+        const d = await res.json();
+
+        document.getElementById('ssi-did-display').innerText = d.did;
+        document.getElementById('ssi-json-preview').innerText = JSON.stringify(d.raw_credential, null, 2);
+
+        const badge = document.getElementById('ssi-verified-badge');
+        badge.innerHTML = `
+          <span class="px-2.5 py-0.5 rounded font-mono font-bold text-xs bg-emerald-950 text-emerald-400 border border-emerald-800">
+            <i class="fa-solid fa-check mr-1"></i> Ed25519 Signature Verified
+          </span>
+        `;
+      } catch (e) {
+        console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-signature"></i><span>Issue & Ed25519 Sign Credential</span>`;
+      }
+    }
+
+    // Break Glass
+    async function triggerBreakGlass() {
+      const btn = document.getElementById('btn-trigger-bg');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Verifying Proof...</span>`;
+
+      const role = document.getElementById('bg-role').value;
+      const purpose = document.getElementById('bg-purpose').value;
+
+      try {
+        const res = await fetch('/api/break-glass/trigger', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({role, purpose})
+        });
+        const d = await res.json();
+
+        const card = document.getElementById('bg-result-card');
+        card.classList.remove('hidden');
+
+        document.getElementById('bg-commit').innerText = d.commitment;
+        document.getElementById('bg-challenge').innerText = d.challenge_hex;
+        document.getElementById('bg-proof').innerText = d.proof_preview;
+        document.getElementById('bg-chain-status').innerText = d.audit_valid ? 'VALID & RECORDED' : 'INVALID';
+
+        refreshAuditLogs();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-bolt-lightning"></i><span>Execute Break-Glass Override</span>`;
+      }
+    }
+
+    // Audit logs
+    async function refreshAuditLogs() {
+      try {
+        const res = await fetch('/api/audit/logs');
+        const d = await res.json();
+        const tbody = document.getElementById('audit-table-body');
+        tbody.innerHTML = '';
+
+        d.recent_blocks.forEach(b => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-900/60 transition';
+          const evType = b.event.type || 'unknown';
+          let payloadStr = '';
+          if (evType === 'ids') payloadStr = `Decision: ${b.event.decision}`;
+          else if (evType === 'break_glass') payloadStr = `Purpose: ${b.event.purpose || 'override'}`;
+          else if (evType === 'telemetry') payloadStr = `Slice: ${b.event.slice}, ${Math.round(b.event.latency_ms)}ms`;
+          else payloadStr = JSON.stringify(b.event);
+
+          tr.innerHTML = `
+            <td class="p-2.5 font-bold text-cyan-400">#${b.index}</td>
+            <td class="p-2.5 text-slate-400">${b.timestamp}</td>
+            <td class="p-2.5">
+              <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold ${evType === 'break_glass' ? 'bg-amber-950 text-amber-400 border border-amber-800' : evType === 'ids' ? 'bg-cyan-950 text-cyan-400 border border-cyan-800' : 'bg-slate-800 text-slate-300'}">
+                ${evType}
+              </span>
+            </td>
+            <td class="p-2.5 text-slate-300 truncate max-w-xs">${payloadStr}</td>
+            <td class="p-2.5 text-slate-500 text-[10px]">${b.hash}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // MIT-BIH
+    async function loadMitbihSamples() {
+      try {
+        const res = await fetch('/api/mitbih/sample');
+        const d = await res.json();
+        const tbody = document.getElementById('mitbih-table-body');
+        tbody.innerHTML = '';
+
+        d.records.forEach((r, idx) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-900/60 transition';
+          tr.innerHTML = `
+            <td class="p-2.5 font-bold text-slate-200">${r.beat_index}</td>
+            <td class="p-2.5 text-cyan-400 font-bold">${Math.round(r.heart_rate)} bpm</td>
+            <td class="p-2.5 text-slate-300">${parseFloat(r.rr_interval).toFixed(3)} s</td>
+            <td class="p-2.5 text-slate-400">${parseFloat(r.ecg_min).toFixed(2)} / ${parseFloat(r.ecg_max).toFixed(2)}</td>
+            <td class="p-2.5 ${Math.abs(r.rr_deviation_z) > 3 ? 'text-rose-400 font-bold' : 'text-slate-400'}">${parseFloat(r.rr_deviation_z).toFixed(2)}</td>
+            <td class="p-2.5 ${Math.abs(r.hr_deviation_z) > 3 ? 'text-rose-400 font-bold' : 'text-slate-400'}">${parseFloat(r.hr_deviation_z).toFixed(2)}</td>
+            <td class="p-2.5 text-right">
+              <button onclick="testMitbihBeat(${Math.round(r.heart_rate)})" class="px-2 py-1 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-[11px] font-sans">
+                Load Beat
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function testMitbihBeat(hr) {
+      switchTab('pipeline');
+      const inputHr = document.getElementById('input-hr');
+      inputHr.value = hr;
+      updateVal('hr', hr, ' bpm');
+      executePipeline();
+    }
+
+    // Live Animated ECG Rhythm Strip Canvas
+    function initECG() {
+      const canvas = document.getElementById('ecgCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let offset = 0;
+
+      function draw() {
+        const w = canvas.width = canvas.parentElement.clientWidth;
+        const h = canvas.height = 60;
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+
+        const hr = parseFloat(document.getElementById('input-hr').value) || 72;
+        const period = (60 / hr) * 60; // scale factor
+
+        for (let x = 0; x < w; x++) {
+          const t = (x + offset) % period;
+          let y = h / 2;
+
+          // QRS complex waveform simulation
+          if (t > period * 0.4 && t < period * 0.45) {
+            y -= (t - period * 0.4) * 8; // P wave
+          } else if (t >= period * 0.45 && t < period * 0.5) {
+            y += (t - period * 0.45) * 6;
+          } else if (t >= period * 0.5 && t < period * 0.52) {
+            y += 5; // Q
+          } else if (t >= period * 0.52 && t < period * 0.55) {
+            y -= 25; // R peak
+          } else if (t >= period * 0.55 && t < period * 0.58) {
+            y += 10; // S
+          } else if (t >= period * 0.65 && t < period * 0.75) {
+            y -= Math.sin((t - period * 0.65) / (period * 0.1) * Math.PI) * 7; // T wave
+          }
+
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        offset += 2;
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    }
+
+    // Initialize on window load
+    window.addEventListener('DOMContentLoaded', () => {
+      initECG();
+      loadPreset('normal');
+      refreshAuditLogs();
+    });
+  </script>
+</body>
+</html>
+
